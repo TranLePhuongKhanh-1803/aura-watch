@@ -1,20 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
-import { Heart, Battery, Activity, Droplets, CheckCircle, ArrowRight } from "lucide-react";
+import { Heart, Battery, Activity, Droplets, ArrowRight, Star, ShoppingBag, Moon, Sun, MessageSquare, Send } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [email, setEmail] = useState("");
+  const [theme, setTheme] = useState("light");
+  
+  // Mini E-commerce State
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  
+  // Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { role: "bot", text: "Xin chào! Mình là trợ lý ảo Aura. Mình có thể giúp gì cho bạn?" }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef(null);
   
   const { scrollY } = useScroll();
-  const heroImageY = useTransform(scrollY, [0, 1000], [0, 200]);
+  const heroImageY = useTransform(scrollY, [0, 1000], [0, 150]);
 
   useEffect(() => {
+    // Theme initialization
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme("dark");
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -22,13 +47,25 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
+
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (!email || !email.includes("@")) {
       toast.error("Vui lòng nhập email hợp lệ!");
       return;
     }
-    // Simulate webhook/API call
     toast.promise(
       new Promise((resolve) => setTimeout(resolve, 1000)),
       {
@@ -40,9 +77,39 @@ export default function Home() {
     setEmail("");
   };
 
+  const addToCart = () => {
+    setCartCount(prev => prev + 1);
+    toast.success("Đã thêm Aura Watch vào giỏ hàng!", {
+      icon: '🛍️',
+    });
+  };
+
+  const addToWishlist = () => {
+    setWishlistCount(prev => prev + 1);
+    toast("Đã lưu vào danh sách yêu thích!", {
+      icon: '❤️',
+    });
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    setChatMessages([...chatMessages, { role: "user", text: chatInput }]);
+    setChatInput("");
+    
+    // Simulate bot reply
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { 
+        role: "bot", 
+        text: "Cảm ơn bạn đã quan tâm! Hiện tại phiên bản thử nghiệm chỉ trả lời tự động. Vui lòng để lại email để nhận tư vấn sớm nhất nhé!" 
+      }]);
+    }, 1000);
+  };
+
   const fadeUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
   };
 
   return (
@@ -55,29 +122,43 @@ export default function Home() {
         <div className={styles.navLinks}>
           <a href="#features">Tính năng</a>
           <a href="#health">Sức khoẻ</a>
-          <a href="#design">Thiết kế</a>
           <a href="#specs">Thông số</a>
         </div>
-        <button className={styles.ctaBtn}>Mua Ngay</button>
+        <div className={styles.navTools}>
+          <button className={styles.iconBtn} onClick={toggleTheme} aria-label="Toggle Theme">
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button className={styles.iconBtn} onClick={() => setIsWishlistOpen(true)}>
+            <Heart size={20} />
+            {wishlistCount > 0 && <span className={styles.badgeCount}>{wishlistCount}</span>}
+          </button>
+          <button className={styles.iconBtn} onClick={() => setIsCartOpen(true)}>
+            <ShoppingBag size={20} />
+            {cartCount > 0 && <span className={styles.badgeCount}>{cartCount}</span>}
+          </button>
+          <button className={styles.ctaBtn} onClick={addToCart} style={{ display: 'none' }}>
+            Mua Ngay
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
       <section className={styles.hero}>
         <motion.div 
           className={styles.heroContent}
-          initial={{ opacity: 0, x: -50 }}
+          initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
         >
           <div className={styles.badge}>NEW • AI HEALTH SERIES</div>
           <h1>Sự hoàn mỹ trên cổ tay bạn.</h1>
           <p>
-            Định hình lại phong cách sống với Aura Watch. Thiết kế nguyên khối Titanium, theo dõi sức khỏe AI 24/7 và năng lượng bền bỉ suốt 14 ngày. Trải nghiệm công nghệ vượt giới hạn.
+            Định hình lại phong cách sống với Aura Watch. Thiết kế nguyên khối Titanium, theo dõi sức khỏe AI 24/7 và năng lượng bền bỉ suốt 14 ngày.
           </p>
           <div className={styles.heroButtons}>
-            <button className={styles.primaryBtn}>Đặt hàng trước</button>
-            <button className={styles.ctaBtn} style={{ background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
-              Xem Video
+            <button className={styles.primaryBtn} onClick={addToCart}>Thêm vào giỏ</button>
+            <button className={styles.ctaBtn} onClick={addToWishlist} style={{ background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', boxShadow: 'none' }}>
+              <Heart size={18} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'text-bottom' }}/> Yêu thích
             </button>
           </div>
         </motion.div>
@@ -85,20 +166,20 @@ export default function Home() {
         <motion.div 
           className={styles.heroImageContainer}
           style={{ y: heroImageY }}
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1 }}
         >
           <div className={styles.heroGlow}></div>
           <motion.div
-            animate={{ y: [0, -15, 0], rotate: [0, -2, 2, 0] }}
+            animate={{ y: [0, -10, 0], rotate: [0, -1, 1, 0] }}
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           >
             <Image
               src="/hero.png"
               alt="Aura Smartwatch"
-              width={650}
-              height={650}
+              width={550}
+              height={550}
               priority
               className={styles.heroImage}
             />
@@ -115,24 +196,24 @@ export default function Home() {
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeUp}
         >
-          <h2 className={styles.sectionTitle}>Quyền năng vô hạn</h2>
-          <p className={styles.sectionSubtitle}>Mọi thứ bạn cần, giờ đây hội tụ hoàn hảo trong một thiết kế duy nhất.</p>
+          <h2 className={styles.sectionTitle}>Mọi thứ bạn cần.</h2>
+          <p className={styles.sectionSubtitle}>Hội tụ hoàn hảo trong một thiết kế duy nhất.</p>
         </motion.div>
         
         <div className={styles.featuresGrid}>
           {[
-            { icon: <Heart size={40} />, title: "Cảm biến quang học Pro", desc: "Theo dõi nhịp tim, SpO2 và ECG liên tục với độ chính xác chuẩn y tế." },
-            { icon: <Battery size={40} />, title: "Năng lượng 14 ngày", desc: "Kiến trúc chip Dual-Core mới giúp tối ưu hoá năng lượng vượt trội." },
-            { icon: <Activity size={40} />, title: "Huấn luyện viên AI", desc: "Tự động nhận diện 100+ bài tập và đề xuất lộ trình dựa trên thể trạng." },
-            { icon: <Droplets size={40} />, title: "Chống nước 5ATM", desc: "Thoải mái bơi lội, lặn tự do với thiết kế kín tuyệt đối." }
+            { icon: <Heart size={32} strokeWidth={1.5} />, title: "Cảm biến quang học", desc: "Theo dõi nhịp tim và SpO2 liên tục với độ chính xác chuẩn y tế." },
+            { icon: <Battery size={32} strokeWidth={1.5} />, title: "Năng lượng 14 ngày", desc: "Kiến trúc chip Dual-Core tối ưu hoá năng lượng vượt trội." },
+            { icon: <Activity size={32} strokeWidth={1.5} />, title: "Huấn luyện viên AI", desc: "Tự động nhận diện bài tập và đề xuất lộ trình." },
+            { icon: <Droplets size={32} strokeWidth={1.5} />, title: "Chống nước 5ATM", desc: "Thoải mái bơi lội với thiết kế nguyên khối kín hoàn toàn." }
           ].map((feature, idx) => (
             <motion.div 
               key={idx} 
               className={styles.featureCard}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: idx * 0.1, duration: 0.5 }}
+              transition={{ delay: idx * 0.1, duration: 0.4 }}
             >
               <div className={styles.featureIcon}>{feature.icon}</div>
               <h3>{feature.title}</h3>
@@ -142,8 +223,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Health Tracking Section */}
-      <section id="health" className={styles.section}>
+      {/* Health Tracking (Compact) */}
+      <section id="health" className={styles.section} style={{ paddingTop: '2rem' }}>
         <div className={styles.splitSection}>
           <motion.div 
             className={styles.splitContent}
@@ -154,51 +235,23 @@ export default function Home() {
           >
             <h2>Lắng nghe từng nhịp đập.</h2>
             <p>
-              Hệ thống cảm biến sinh học đa kênh liên tục phân tích dữ liệu cơ thể bạn 24/7. 
-              Từ chất lượng giấc ngủ đến mức độ căng thẳng, Aura Watch luôn thấu hiểu để đưa ra những lời khuyên tốt nhất cho sức khỏe của bạn.
+              Hệ thống cảm biến sinh học đa kênh phân tích dữ liệu 24/7. Từ giấc ngủ đến mức độ căng thẳng, Aura Watch luôn thấu hiểu để đưa ra lời khuyên tốt nhất.
             </p>
           </motion.div>
           <motion.div 
             className={styles.splitImage}
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <Image src="/health.png" alt="Health Tracking" width={600} height={400} />
+            <Image src="/health.png" alt="Health Tracking Focus" width={400} height={400} />
           </motion.div>
         </div>
       </section>
 
-      {/* Design Section */}
-      <section id="design" className={styles.section}>
-        <div className={`${styles.splitSection} ${styles.splitReverse}`}>
-          <motion.div 
-            className={styles.splitContent}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeUp}
-          >
-            <h2>Chế tác từ Titanium.<br/>Đẹp không tì vết.</h2>
-            <p>
-              Vượt qua hàng trăm giờ gia công CNC, khung viền Titanium Aerospace kết hợp cùng mặt kính Sapphire nguyên khối mang lại độ bền vô đối và vẻ đẹp vượt thời gian.
-            </p>
-          </motion.div>
-          <motion.div 
-            className={styles.splitImage}
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-          >
-            <Image src="/design.png" alt="Titanium Design" width={600} height={400} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Technical Specs */}
-      <section id="specs" className={styles.section}>
+      {/* Technical Specs (Compact) */}
+      <section id="specs" className={styles.section} style={{ paddingTop: '2rem' }}>
         <motion.div 
           className={styles.sectionHeader}
           initial="hidden"
@@ -206,23 +259,21 @@ export default function Home() {
           viewport={{ once: true }}
           variants={fadeUp}
         >
-          <h2 className={styles.sectionTitle}>Sức mạnh ẩn sâu bên trong</h2>
+          <h2 className={styles.sectionTitle}>Sức mạnh ẩn sâu.</h2>
         </motion.div>
         
         <div className={styles.specsGrid}>
           {[
             { label: "Màn hình", value: '1.43" AMOLED' },
-            { label: "Độ sáng tối đa", value: "2000 nits" },
             { label: "Vật liệu", value: "Titanium" },
             { label: "Trọng lượng", value: "35g" },
-            { label: "Thời lượng pin", value: "14 Ngày" },
-            { label: "Kết nối", value: "GPS & 5G" },
+            { label: "Pin", value: "14 Ngày" }
           ].map((spec, idx) => (
             <motion.div 
               key={idx} 
               className={styles.specCard}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
             >
@@ -233,23 +284,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Gallery Section */}
-      <section className={styles.section} style={{ paddingTop: '2rem' }}>
-        <div className={styles.galleryGrid}>
-          <div className={styles.galleryItem}>
-             <Image src="/hero.png" alt="Gallery 1" width={500} height={500} />
-          </div>
-          <div className={styles.galleryItem}>
-             <Image src="/health.png" alt="Gallery 2" width={500} height={500} />
-          </div>
-          <div className={styles.galleryItem}>
-             <Image src="/design.png" alt="Gallery 3" width={500} height={500} />
-          </div>
-        </div>
-      </section>
-
-      {/* Stats/Social Proof */}
-      <section className={styles.section}>
+      {/* Social Proof (Redesigned) */}
+      <section className={styles.section} style={{ paddingTop: '3rem', paddingBottom: '3rem' }}>
         <motion.div 
           className={styles.statsContainer}
           initial="hidden"
@@ -258,8 +294,15 @@ export default function Home() {
           variants={fadeUp}
         >
           <div className={styles.statItem}>
+            <div className={styles.stars}>
+              <Star fill="currentColor" size={20} />
+              <Star fill="currentColor" size={20} />
+              <Star fill="currentColor" size={20} />
+              <Star fill="currentColor" size={20} />
+              <Star fill="currentColor" size={20} />
+            </div>
             <h4>4.9/5</h4>
-            <p>Đánh giá từ người dùng</p>
+            <p>Hàng ngàn đánh giá tích cực</p>
           </div>
           <div className={styles.statItem}>
             <h4>12.000+</h4>
@@ -273,15 +316,15 @@ export default function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className={styles.section}>
+      <section className={styles.section} style={{ paddingBottom: '2rem' }}>
         <motion.div 
           className={styles.newsletterSection}
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className={styles.sectionTitle}>Tham gia cùng chúng tôi</h2>
-          <p className={styles.sectionSubtitle}>Đăng ký ngay để nhận thông báo sớm nhất về ngày ra mắt và ưu đãi độc quyền 20%.</p>
+          <h2 className={styles.sectionTitle}>Tham gia cùng chúng tôi.</h2>
+          <p className={styles.sectionSubtitle}>Đăng ký ngay để nhận thông báo sớm nhất về ngày ra mắt.</p>
           
           <form className={styles.newsletterForm} onSubmit={handleSubscribe}>
             <input 
@@ -292,7 +335,7 @@ export default function Home() {
               onChange={(e) => setEmail(e.target.value)}
             />
             <button type="submit" className={styles.submitBtn}>
-              Đăng ký ngay <ArrowRight size={18} style={{ display: 'inline', marginLeft: '8px', verticalAlign: 'middle' }}/>
+              Đăng ký ngay
             </button>
           </form>
         </motion.div>
@@ -307,8 +350,8 @@ export default function Home() {
           variants={fadeUp}
         >
           <h2>Ready to upgrade your lifestyle?</h2>
-          <button className={styles.primaryBtn} style={{ fontSize: '1.2rem', padding: '1.2rem 3rem' }}>
-            Mua Ngay
+          <button className={styles.primaryBtn} style={{ fontSize: '1.1rem', padding: '1rem 2.5rem' }} onClick={addToCart}>
+            Mua Ngay <ArrowRight size={18} style={{ display: 'inline', marginLeft: '8px', verticalAlign: 'middle' }}/>
           </button>
         </motion.div>
       </section>
@@ -318,7 +361,7 @@ export default function Home() {
         <div className={styles.footerContent}>
           <div className={styles.footerBrand}>
             <h3>Aura Watch</h3>
-            <p>Công nghệ đột phá, thiết kế vượt thời gian. Kiến tạo chuẩn mực mới cho thiết bị đeo thông minh.</p>
+            <p>Công nghệ đột phá, thiết kế vượt thời gian.</p>
           </div>
           <div className={styles.footerLinks}>
             <div className={styles.linkGroup}>
@@ -326,7 +369,6 @@ export default function Home() {
               <ul>
                 <li><a href="#">Aura Watch Pro</a></li>
                 <li><a href="#">Aura Watch SE</a></li>
-                <li><a href="#">Phụ kiện</a></li>
               </ul>
             </div>
             <div className={styles.linkGroup}>
@@ -334,15 +376,6 @@ export default function Home() {
               <ul>
                 <li><a href="#">FAQ</a></li>
                 <li><a href="#">Bảo hành</a></li>
-                <li><a href="#">Liên hệ</a></li>
-              </ul>
-            </div>
-            <div className={styles.linkGroup}>
-              <h4>Công ty</h4>
-              <ul>
-                <li><a href="#">Về chúng tôi</a></li>
-                <li><a href="#">Tuyển dụng</a></li>
-                <li><a href="#">Tin tức</a></li>
               </ul>
             </div>
           </div>
@@ -350,11 +383,155 @@ export default function Home() {
         <div className={styles.footerBottom}>
           <p>© 2026 Aura Inc. Bảo lưu mọi quyền.</p>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
           </div>
         </div>
       </footer>
+
+      {/* Chatbot Widget */}
+      <div className={styles.chatbotBtn} onClick={() => setIsChatOpen(!isChatOpen)}>
+        <MessageSquare size={24} />
+      </div>
+      
+      <AnimatePresence>
+        {isChatOpen && (
+          <motion.div 
+            className={styles.chatWindow}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className={styles.chatHeader}>
+              <span>Hỗ trợ trực tuyến</span>
+              <button className={styles.chatClose} onClick={() => setIsChatOpen(false)}>×</button>
+            </div>
+            <div className={styles.chatBody}>
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`${styles.message} ${msg.role === 'bot' ? styles.bot : styles.user}`}>
+                  {msg.text}
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            <form className={styles.chatInputContainer} onSubmit={handleSendMessage}>
+              <input 
+                type="text" 
+                className={styles.chatInput} 
+                placeholder="Nhập tin nhắn..." 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+              />
+              <button type="submit" className={styles.chatSend}>
+                <Send size={16} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Drawers */}
+      <AnimatePresence>
+        {(isCartOpen || isWishlistOpen) && (
+          <motion.div 
+            className={styles.drawerOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => { setIsCartOpen(false); setIsWishlistOpen(false); }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div 
+            className={styles.drawer}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          >
+            <div className={styles.drawerHeader}>
+              <h3>Giỏ hàng</h3>
+              <button className={styles.closeBtn} onClick={() => setIsCartOpen(false)}>×</button>
+            </div>
+            <div className={styles.drawerBody}>
+              {cartCount === 0 ? (
+                <div className={styles.emptyState}>Giỏ hàng của bạn đang trống.</div>
+              ) : (
+                <>
+                  {Array.from({ length: cartCount }).map((_, i) => (
+                    <div key={i} className={styles.cartItem}>
+                      <Image src="/hero.png" alt="Aura Watch" width={70} height={70} />
+                      <div className={styles.cartItemInfo}>
+                        <h4>Aura Watch</h4>
+                        <p>Titanium - 45mm</p>
+                        <button className={styles.removeBtn} onClick={() => setCartCount(c => c - 1)}>Xoá</button>
+                      </div>
+                      <div style={{ fontWeight: 600 }}>$499</div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+            {cartCount > 0 && (
+              <div className={styles.drawerFooter}>
+                <div className={styles.totalRow}>
+                  <span>Tổng cộng:</span>
+                  <span>${cartCount * 499}</span>
+                </div>
+                <button className={styles.checkoutBtn} onClick={() => {toast.success("Đang chuyển đến thanh toán..."); setIsCartOpen(false);}}>Thanh toán</button>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isWishlistOpen && (
+          <motion.div 
+            className={styles.drawer}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          >
+            <div className={styles.drawerHeader}>
+              <h3>Yêu thích</h3>
+              <button className={styles.closeBtn} onClick={() => setIsWishlistOpen(false)}>×</button>
+            </div>
+            <div className={styles.drawerBody}>
+              {wishlistCount === 0 ? (
+                <div className={styles.emptyState}>Chưa có sản phẩm yêu thích.</div>
+              ) : (
+                <>
+                  {Array.from({ length: wishlistCount }).map((_, i) => (
+                    <div key={i} className={styles.cartItem}>
+                      <Image src="/hero.png" alt="Aura Watch" width={70} height={70} />
+                      <div className={styles.cartItemInfo}>
+                        <h4>Aura Watch</h4>
+                        <p>Titanium - 45mm</p>
+                        <button className={styles.removeBtn} onClick={() => setWishlistCount(c => c - 1)}>Bỏ thích</button>
+                      </div>
+                      <button 
+                        className={styles.primaryBtn} 
+                        style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+                        onClick={() => {
+                          setWishlistCount(c => c - 1);
+                          addToCart();
+                        }}
+                      >Thêm</button>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }
