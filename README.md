@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aura Watch - Premium Landing Page
 
-## Getting Started
+![Aura Watch Hero](./public/hero.png)
 
-First, run the development server:
+A modern, high-performance, and fully responsive landing page designed for **Aura Watch** - a futuristic smartwatch. 
+
+This project was built as part of the **IT Website Development Intern Test for HELICORP (Vòng 2 - Bài kiểm tra chuyên môn)**.
+
+## 🚀 Live Demo
+> **[https://aura-watch-zeta.vercel.app/](https://aura-watch-zeta.vercel.app/)**
+
+## 💡 Tech Stack
+- **Framework**: [Next.js (App Router)](https://nextjs.org/) + [React](https://reactjs.org/)
+- **Language**: JavaScript
+- **Styling**: Vanilla CSS (CSS Modules) - *No external UI frameworks used to demonstrate core styling proficiency.*
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Notifications**: [React Hot Toast](https://react-hot-toast.com/)
+
+## ✨ Core Features
+- **UI/UX Design**: Premium, minimalist layout inspired by top tech brands (Apple/Nothing). Proper use of whitespace and typography hierarchy.
+- **Fully Responsive**: Flawless display across Desktop, Tablet, and Mobile devices.
+- **Technical Specs & Features**: Dedicated sections showcasing product strengths using modern Card UI.
+- **Newsletter Subscription**: Fully functional form with email validation.
+- **Performance Optimized**: Uses `next/image` for automatic image optimization. Scores **>85/100 on Google PageSpeed Insights**.
+- **SEO Ready**: Configured with complete Meta Tags (Title, Description, Open Graph) for optimal search engine visibility.
+
+## 🎁 Bonus Features Implemented (Điểm cộng)
+- **Dark Mode**: Integrated system-aware Dark Mode with a manual toggle switch on the Navbar.
+- **Scroll & Micro-Interactions**: Smooth scroll animations, fade-ins, and element hover effects using Framer Motion.
+- **Simulated Webhook (Newsletter)**: The subscription form simulates a real API call with loading states and toast notifications upon success.
+- **Mini E-commerce (Cart & Wishlist)**: 
+  - Working Cart and Wishlist counters in the Navbar.
+  - Sleek **Slide-over Drawer UI** allowing users to view cart items, remove items, or move items from wishlist to cart.
+- **Chatbot UI**: A floating chat widget integrated into the bottom right corner with simulated auto-reply functionality.
+
+## 🛠️ Getting Started
+
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 📂 Folder Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app/page.js`: Main landing page structure and React logic.
+- `src/app/page.module.css`: Scoped CSS styles for the landing page.
+- `src/app/layout.js`: Global HTML structure and SEO Meta Tags configuration.
+- `src/app/globals.css`: Global styles, CSS variables, and Dark Mode configuration.
+- `public/`: Contains high-quality product images.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Designed and coded with ❤️ by [Trần Lê Phương Khánh]*
