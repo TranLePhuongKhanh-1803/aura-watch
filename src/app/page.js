@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { m as motion, LazyMotion, domAnimation, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { Heart, Battery, Activity, Droplets, ArrowRight, Star, ShoppingBag, Moon, Sun, MessageSquare, Send } from "lucide-react";
 import styles from "./page.module.css";
@@ -151,6 +151,7 @@ export default function Home() {
   };
 
   return (
+    <LazyMotion features={domAnimation}>
     <main className={styles.main}>
       <Toaster position="top-center" />
 
@@ -571,5 +572,6 @@ export default function Home() {
       </AnimatePresence>
 
     </main>
+    </LazyMotion>
   );
 }
