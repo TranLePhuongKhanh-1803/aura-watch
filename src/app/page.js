@@ -102,26 +102,42 @@ export default function Home() {
     const message = chatInput.trim();
     if (!message) return;
     
-    setChatMessages([...chatMessages, { role: "user", text: message }]);
+    const newMessages = [...chatMessages, { role: "user", text: message }];
+    setChatMessages(newMessages);
     setChatInput("");
 
     try {
+      // Lưu tin nhắn user vào Firebase
       await addDoc(collection(db, "chat_messages"), {
         text: message,
         role: "user",
         timestamp: serverTimestamp()
       });
+
+      // Gọi API Gemini
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.text) {
+        setChatMessages(prev => [...prev, { role: "bot", text: data.text }]);
+        // Lưu phản hồi của bot vào Firebase
+        await addDoc(collection(db, "chat_messages"), {
+          text: data.text,
+          role: "bot",
+          timestamp: serverTimestamp()
+        });
+      } else {
+        setChatMessages(prev => [...prev, { role: "bot", text: "Xin lỗi, Aura đang gặp sự cố kết nối. Vui lòng thử lại sau!" }]);
+      }
     } catch (error) {
       console.error("Error saving message:", error);
+      setChatMessages(prev => [...prev, { role: "bot", text: "Xin lỗi, đã có lỗi kết nối mạng. Vui lòng thử lại!" }]);
     }
-    
-    // Simulate bot reply
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { 
-        role: "bot", 
-        text: "Cảm ơn bạn đã quan tâm! Hiện tại phiên bản thử nghiệm chỉ trả lời tự động. Vui lòng để lại email để nhận tư vấn sớm nhất nhé!" 
-      }]);
-    }, 1000);
   };
 
   const fadeUp = {
