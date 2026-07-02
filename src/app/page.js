@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { m as motion, LazyMotion, domAnimation, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { m as motion, LazyMotion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import dynamic from "next/dynamic";
 import { Heart, Battery, Activity, Droplets, ArrowRight, Star, ShoppingBag, Moon, Sun, MessageSquare, Send } from "lucide-react";
@@ -154,7 +154,7 @@ export default function Home() {
   };
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={() => import("framer-motion").then((res) => res.domAnimation)}>
       <main className={styles.main}>
         <Toaster position="top-center" />
 
@@ -337,22 +337,15 @@ export default function Home() {
           >
             <div className={styles.statItem}>
               <div className={styles.stars}>
-                <Star fill="currentColor" size={20} />
-                <Star fill="currentColor" size={20} />
-                <Star fill="currentColor" size={20} />
-                <Star fill="currentColor" size={20} />
-                <Star fill="currentColor" size={20} />
+                <Star fill="currentColor" size={20} /><Star fill="currentColor" size={20} /><Star fill="currentColor" size={20} /><Star fill="currentColor" size={20} /><Star fill="currentColor" size={20} />
               </div>
-              <h4>4.9/5</h4>
-              <p>Hàng ngàn đánh giá tích cực</p>
+              <h3>4.9/5</h3><p>Hàng ngàn đánh giá tích cực</p>
             </div>
             <div className={styles.statItem}>
-              <h4>12.000+</h4>
-              <p>Khách hàng tin dùng</p>
+              <h3>12.000+</h3><p>Khách hàng tin dùng</p>
             </div>
             <div className={styles.statItem}>
-              <h4>#1</h4>
-              <p>Giải thưởng Thiết Kế 2026</p>
+              <h3>#1</h3><p>Giải thưởng Thiết Kế 2026</p>
             </div>
           </motion.div>
         </section>
@@ -432,9 +425,9 @@ export default function Home() {
         </footer>
 
         {/* Chatbot Widget */}
-        <div className={styles.chatbotBtn} onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Mở Chatbot">
+        <button className={styles.chatbotBtn} onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Mở Chatbot">
           <MessageSquare size={24} />
-        </div>
+        </button>
 
         <AnimatePresence>
           {isChatOpen && (
