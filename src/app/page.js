@@ -5,8 +5,6 @@ import Image from "next/image";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { Heart, Battery, Activity, Droplets, ArrowRight, Star, ShoppingBag, Moon, Sun, MessageSquare, Send } from "lucide-react";
-import { db } from "../lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -70,10 +68,14 @@ export default function Home() {
     }
     
     toast.promise(
-      addDoc(collection(db, "subscribers"), {
-        email: email,
-        timestamp: serverTimestamp()
-      }),
+      (async () => {
+        const { db } = await import("../lib/firebase");
+        const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+        return addDoc(collection(db, "subscribers"), {
+          email: email,
+          timestamp: serverTimestamp()
+        });
+      })(),
       {
         loading: 'Đang xử lý...',
         success: <b>Đăng ký thành công! Chào mừng bạn.</b>,
@@ -107,6 +109,9 @@ export default function Home() {
     setChatInput("");
 
     try {
+      const { db } = await import("../lib/firebase");
+      const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+
       // Lưu tin nhắn user vào Firebase
       await addDoc(collection(db, "chat_messages"), {
         text: message,
@@ -161,11 +166,11 @@ export default function Home() {
           <button className={styles.iconBtn} onClick={toggleTheme} aria-label="Toggle Theme">
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button className={styles.iconBtn} onClick={() => setIsWishlistOpen(true)}>
+          <button className={styles.iconBtn} onClick={() => setIsWishlistOpen(true)} aria-label="Mở danh sách yêu thích">
             <Heart size={20} />
             {wishlistCount > 0 && <span className={styles.badgeCount}>{wishlistCount}</span>}
           </button>
-          <button className={styles.iconBtn} onClick={() => setIsCartOpen(true)}>
+          <button className={styles.iconBtn} onClick={() => setIsCartOpen(true)} aria-label="Mở giỏ hàng">
             <ShoppingBag size={20} />
             {cartCount > 0 && <span className={styles.badgeCount}>{cartCount}</span>}
           </button>
@@ -278,7 +283,7 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <Image src="/health.png" alt="Health Tracking Focus" width={400} height={400} />
+            <Image src="/health.png" alt="Health Tracking Focus" width={400} height={400} loading="lazy" />
           </motion.div>
         </div>
       </section>
@@ -423,7 +428,7 @@ export default function Home() {
       </footer>
 
       {/* Chatbot Widget */}
-      <div className={styles.chatbotBtn} onClick={() => setIsChatOpen(!isChatOpen)}>
+      <div className={styles.chatbotBtn} onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Mở Chatbot">
         <MessageSquare size={24} />
       </div>
       
@@ -488,7 +493,7 @@ export default function Home() {
           >
             <div className={styles.drawerHeader}>
               <h3>Giỏ hàng</h3>
-              <button className={styles.closeBtn} onClick={() => setIsCartOpen(false)}>×</button>
+              <button className={styles.closeBtn} onClick={() => setIsCartOpen(false)} aria-label="Đóng giỏ hàng">×</button>
             </div>
             <div className={styles.drawerBody}>
               {cartCount === 0 ? (
@@ -533,7 +538,7 @@ export default function Home() {
           >
             <div className={styles.drawerHeader}>
               <h3>Yêu thích</h3>
-              <button className={styles.closeBtn} onClick={() => setIsWishlistOpen(false)}>×</button>
+              <button className={styles.closeBtn} onClick={() => setIsWishlistOpen(false)} aria-label="Đóng danh sách yêu thích">×</button>
             </div>
             <div className={styles.drawerBody}>
               {wishlistCount === 0 ? (
