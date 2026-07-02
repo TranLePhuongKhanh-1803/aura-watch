@@ -5,6 +5,8 @@ import Image from "next/image";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { Heart, Battery, Activity, Droplets, ArrowRight, Star, ShoppingBag, Moon, Sun, MessageSquare, Send } from "lucide-react";
+import { db } from "../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -60,14 +62,18 @@ export default function Home() {
     localStorage.setItem("theme", newTheme);
   };
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email || !email.includes("@")) {
       toast.error("Vui lòng nhập email hợp lệ!");
       return;
     }
+    
     toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
+      addDoc(collection(db, "subscribers"), {
+        email: email,
+        timestamp: serverTimestamp()
+      }),
       {
         loading: 'Đang xử lý...',
         success: <b>Đăng ký thành công! Chào mừng bạn.</b>,
@@ -91,12 +97,23 @@ export default function Home() {
     });
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    const message = chatInput.trim();
+    if (!message) return;
     
-    setChatMessages([...chatMessages, { role: "user", text: chatInput }]);
+    setChatMessages([...chatMessages, { role: "user", text: message }]);
     setChatInput("");
+
+    try {
+      await addDoc(collection(db, "chat_messages"), {
+        text: message,
+        role: "user",
+        timestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
     
     // Simulate bot reply
     setTimeout(() => {
